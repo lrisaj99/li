@@ -75,14 +75,42 @@
     }
 
     #scene2 {
-      background: #222;
-      color: #fff;
-      font: 32px sans-serif;
+      background: #000;
     }
-    #scene2.active {
-      display: flex;
-      justify-content: center;
-      align-items: center;
+
+    /* House on the left with the hatted guy standing in front of it */
+    #house {
+      left: 5%;
+      bottom: 25%;
+      height: 60vh;
+    }
+    #guy2 {
+      left: 15%;
+      bottom: 20%;
+      height: 35vh;
+      z-index: 1;
+    }
+
+    /* Car along the bottom of the screen */
+    #car {
+      left: 50%;
+      bottom: 2%;
+      height: 25vh;
+      cursor: pointer;
+      z-index: 2;
+      translate: -50% 0;
+      transition: left 1.5s ease-in;
+    }
+    #car.shake {
+      animation: shake 0.1s linear infinite;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translate(0, 0) rotate(0); }
+      25%      { transform: translate(-2px, 1px) rotate(-0.5deg); }
+      75%      { transform: translate(2px, -1px) rotate(0.5deg); }
+    }
+    #car.drive-off {
+      left: 150%;
     }
   </style>
 </head>
@@ -94,7 +122,9 @@
   </section>
 
   <section id="scene2" class="scene">
-    Scene 2
+    <img id="house" class="sprite" src="assets/house.png" alt="House">
+    <img id="guy2" class="sprite" src="assets/diatom-guy-with-hat.png" alt="Diatom guy with hat">
+    <img id="car" class="sprite" src="assets/car.png" alt="Car">
   </section>
 
   <script>
@@ -145,6 +175,21 @@
       guy.classList.remove("dragging");
       guy.style.transform = "";
       if (overlaps) showScene("scene2");
+    });
+
+    // Clicking the car puts the guy in it; it shakes, then drives off to the right
+    const guy2 = document.getElementById("guy2");
+    const car = document.getElementById("car");
+    let carStarted = false;
+
+    car.addEventListener("click", () => {
+      if (carStarted) return;
+      carStarted = true;
+      guy2.style.display = "none";
+      car.src = "assets/car-with-driver.png";
+      car.classList.add("shake");
+
+      setTimeout(() => car.classList.add("drive-off"), 1000);
     });
   </script>
 </body>
