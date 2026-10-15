@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diatom Guy</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .scene {
+      position: fixed;
+      inset: 0;
+      display: none;
+      background-size: cover;
+      background-position: center;
+    }
+    .scene.active {
+      display: block;
+    }
+
+    #scene1 {
+      background-image: url("assets/inside-scene.jpg");
+    }
+
+    .sprite {
+      position: absolute;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* Diatom guy on the left, hat sitting above him */
+    #guy {
+      left: 10%;
+      bottom: 10%;
+      height: 50vh;
+    }
+    #hat {
+      left: 10%;
+      bottom: 62%;
+      height: 15vh;
+      cursor: pointer;
+    }
+
+    /* Door on the right, hidden until the hat is clicked */
+    #door {
+      right: 10%;
+      bottom: 10%;
+      height: 60vh;
+      display: none;
+    }
+    #door.visible {
+      display: block;
+    }
+
+    #guy.draggable {
+      cursor: grab;
+      touch-action: none;
+    }
+    #guy.dragging {
+      cursor: grabbing;
+      animation: none;
+    }
+
+    .bob {
+      animation: bob 1.6s ease-in-out infinite;
+    }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-12px); }
+    }
+
+    #scene2 {
+      background: #222;
+      color: #fff;
+      font: 32px sans-serif;
+    }
+    #scene2.active {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <section id="scene1" class="scene active">
+    <img id="guy" class="sprite" src="assets/diatom-guy.png" alt="Diatom guy">
+    <img id="hat" class="sprite bob" src="assets/hat.png" alt="Hat">
+    <img id="door" class="sprite" src="assets/door.png" alt="Door">
+  </section>
+
+  <section id="scene2" class="scene">
+    Scene 2
+  </section>
+
+  <script>
+    const guy = document.getElementById("guy");
+    const hat = document.getElementById("hat");
+    const door = document.getElementById("door");
+
+    function showScene(id) {
+      document.querySelectorAll(".scene").forEach(s => s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    // Clicking the hat puts it on the guy and reveals the door
+    hat.addEventListener("click", () => {
+      guy.src = "assets/diatom-guy-with-hat.png";
+      hat.style.display = "none";
+      door.classList.add("visible");
+      guy.classList.add("bob", "draggable");
+    });
+
+    // Dragging the hatted guy onto the door starts Scene 2
+    let startX, startY, dragging = false;
+
+    guy.addEventListener("pointerdown", e => {
+      if (!guy.classList.contains("draggable")) return;
+      dragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      guy.classList.add("dragging");
+      guy.setPointerCapture(e.pointerId);
+    });
+
+    guy.addEventListener("pointermove", e => {
+      if (!dragging) return;
+      guy.style.transform = `translate(${e.clientX - startX}px, ${e.clientY - startY}px)`;
+    });
+
+    guy.addEventListener("pointerup", e => {
+      if (!dragging) return;
+      dragging = false;
+
+      // Measure before re-enabling the bob animation, which overrides the drag offset
+      const g = guy.getBoundingClientRect();
+      const d = door.getBoundingClientRect();
+      const overlaps = g.left < d.right && g.right > d.left &&
+                       g.top < d.bottom && g.bottom > d.top;
+
+      guy.classList.remove("dragging");
+      guy.style.transform = "";
+      if (overlaps) showScene("scene2");
+    });
+  </script>
+</body>
+</html>
